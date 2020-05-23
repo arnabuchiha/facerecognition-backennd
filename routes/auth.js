@@ -6,11 +6,11 @@ const jwt=require('jsonwebtoken');
 
 router.post('/register',async(req,res)=>{
     const {error}=registerValidation(req.body);
-    if(error)return res.status(400).send(error.details[0].message);
+    if(error)return res.status(400).json({success:false,msg:error.details[0].message});
     
 
     const emailExist=await User.findOne({email:req.body.email});
-    if(emailExist) return res.status(400).send('Email already exists');
+    if(emailExist) return res.status(400).json({success:false,msg:'Email already exists'});
     //Hash Password
     const salt=await bcrypt.genSalt(10);
     const hashedPassword=await bcrypt.hash(req.body.password,salt);
@@ -21,10 +21,10 @@ router.post('/register',async(req,res)=>{
         password:hashedPassword
     });
     try{
-        const savedUser=await user.save();
+        await user.save();
         res.json({success:true});
     }catch(err){
-        res.status(400).send(err);
+        res.status(400).json({success:false,msg:err});
     }
 
 })
@@ -32,14 +32,14 @@ router.post('/register',async(req,res)=>{
 
 router.post('/login',async (req,res)=>{
     const {error}=loginValidation(req.body);
-    if(error)return res.status(400).send(error.details[0].message);
+    if(error)return res.status(400).json({success:false,msg:error.details[0].message});
     const user=await User.findOne({email:req.body.email});
-    if(!user) return res.status(400).send('Email or Password is wrong');
+    if(!user) return res.status(400).json({success:false,msg:'Email or Password is wrong'});
     const validPass=await bcrypt.compare(req.body.password,user.password);
-    if(!validPass)return res.status(400).send('Email or Password is wrong');
+    if(!validPass)return res.status(400).json({success:false,msg:'Email or Password is wrong'});
     
     const token=jwt.sign({_id:user._id},process.env.TOKEN_SECRET);
-    res.header('auth-token',token).send(token);
+    res.header('auth-token',token).json({success:true,msg:token});
 
 });
 

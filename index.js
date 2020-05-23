@@ -10,8 +10,9 @@ mongoose.connect(process.env.DB_CONNECT,
 ()=>console.log('Connected to db'))
 
 const authRoute=require('./routes/auth');
-
+const rankRoute=require('./routes/rank');
 app.use(express.json());
 
 app.use('/api/user',authRoute);
+app.use('/api/rank',rankRoute);
 app.listen(3000,()=>console.log('Up and Running'));
